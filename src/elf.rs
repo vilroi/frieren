@@ -8,6 +8,7 @@ use std::{
 use crate::header::*;
 use crate::section::*;
 use crate::segment::*;
+use crate::symbols::*;
 
 const EI_NIDENT: usize = 16;
 const ELF_MAGIC: u32 = 0x464c457f;
@@ -24,6 +25,10 @@ impl Elf {
         let mut elf = Elf::default();
         let data_vec = read_to_vec(path)?;
         let data = data_vec.as_ptr();
+
+        if !is_ptr_to_elf(data as *const u32) {
+            return Err(Error::other("'{}' not a valid elf file"));
+        }
 
         unsafe {
             elf.header = ptr::read(data as *const _);
@@ -56,10 +61,17 @@ impl Elf {
                 elf.sections.push(Section::from_shdr_ptr(shdrp));
                 shdrp = shdrp.add(1);
             }
-
         }
 
         Ok(elf)
+    }
+
+    pub fn get_section_by_type(&self, typ: u32) -> impl Iterator<Item = &Section> {
+        let vec: Vec<&Section> = self.sections.iter()
+            .filter(|&s| s.typ == typ)
+            .collect();
+
+        vec.into_iter()
     }
 }
 
@@ -72,12 +84,11 @@ fn read_to_vec(path: &str) -> Result<Vec<u8>> {
     Ok(vec)
 }
 
-fn is_ptr_to_elf(p: *const usize) -> bool {
+fn is_ptr_to_elf(p: *const u32) -> bool {
     if p.is_null() {
         return false
     }
 
-    let p = p as *const u32;
     unsafe {
         if *p == ELF_MAGIC { return true; } else {return false;}
     }

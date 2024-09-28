@@ -8,6 +8,7 @@ mod elf;
 mod header;
 mod section;
 mod segment;
+mod symbols;
 
 const PAGE_SIZE: usize = 0x1000;
 
@@ -24,14 +25,15 @@ mod tests {
         //let path = "/home/vilr0i/Projects/programming/frieren/test.bin.bad";
         let elf = elf::Elf::open(path).expect("test failed");
 
-        if elf.sections.len() == 0 {
-            println!("section headers not found");
-        } else {
-            for p in &elf.segments {
-                println!("{p}");
-            }
+        let symtabs = elf.get_section_by_type(3);
+        for s in symtabs {
+            println!("{s}");
         }
 
+        let relocs = elf.get_section_by_type(4);
+        for r in relocs {
+            println!("{r}");
+        }
     }
 }
 

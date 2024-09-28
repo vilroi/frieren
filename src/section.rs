@@ -23,16 +23,16 @@ impl fmt::Display for Shdr {
 
 #[derive(Debug)]
 pub struct Section {
-    name: String,
-    typ: u32,
-    flags: usize,
-    addr: usize,
-    offset: usize,
-    size: usize,
-    link: u32,
-    info: u32,
-    addralign: usize,
-    entsize: usize,
+    pub name: String,
+    pub typ: u32,
+    pub flags: usize,
+    pub addr: usize,
+    pub offset: usize,
+    pub size: usize,
+    pub link: u32,
+    pub info: u32,
+    pub addralign: usize,
+    pub entsize: usize,
 }
 
 impl fmt::Display for Section {
@@ -59,4 +59,3 @@ impl Section {
         }
     }
 }
-
