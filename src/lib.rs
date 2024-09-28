@@ -16,11 +16,15 @@ mod tests {
     fn test_elf() {
         let loadaddr = get_loadaddr();
         println!("load address: {:#x}", loadaddr as usize);
-        let elf = elf::ElfPtr::from_ptr(loadaddr).expect("test failed");
+        
+        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let elf = elf::Elf::open(path).expect("test failed");
 
-        unsafe {
-            println!("{}", *elf.header);
+        println!("{}", elf.header);
+        for s in &elf.sections {
+            println!("{s}");
         }
+
     }
 }
 
