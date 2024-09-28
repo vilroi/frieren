@@ -19,6 +19,7 @@ impl fmt::Display for Sym {
 
 pub struct Symbol {
     pub name: String,
+    pub name_offset: u32,
     pub info: u8,
     pub other: u8,
     pub shndx: u16,
@@ -31,6 +32,7 @@ impl Symbol {
         unsafe {
             Symbol {
                 name: String::new(),
+                name_offset: (*p).st_name,
                 info: (*p).st_info,
                 other: (*p).st_other,
                 shndx: (*p).st_shndx,

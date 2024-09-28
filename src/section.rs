@@ -24,6 +24,7 @@ impl fmt::Display for Shdr {
 #[derive(Debug)]
 pub struct Section {
     pub name: String,
+    pub name_offset: u32,
     pub typ: u32,
     pub flags: usize,
     pub addr: usize,
@@ -46,6 +47,7 @@ impl Section {
         unsafe {
             Section {
                 name: String::new(),
+                name_offset: (*p).sh_name,
                 typ: (*p).sh_type,
                 flags: (*p).sh_flags,
                 addr: (*p).sh_addr,

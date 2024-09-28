@@ -21,7 +21,6 @@ impl fmt::Display for Phdr {
 
 #[derive(Debug)]
 pub struct Segment {
-    name: String,
     typ: u32,
     flags: u32,
     offset: usize,
@@ -36,7 +35,6 @@ impl Segment {
     pub fn from_phdr_ptr(p: *const Phdr) -> Self {
         unsafe {
             Segment {
-                name: String::new(),
                 typ: (*p).p_type,
                 flags: (*p).p_flags,
                 offset: (*p).p_offset,
