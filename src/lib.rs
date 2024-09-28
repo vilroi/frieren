@@ -5,6 +5,9 @@ use std::{
 };
 
 mod elf;
+mod header;
+mod section;
+mod segment;
 
 const PAGE_SIZE: usize = 0x1000;
 
@@ -18,10 +21,15 @@ mod tests {
         println!("load address: {:#x}", loadaddr as usize);
         
         let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        //let path = "/home/vilr0i/Projects/programming/frieren/test.bin.bad";
         let elf = elf::Elf::open(path).expect("test failed");
 
-        for p in &elf.segments {
-            println!("{p}");
+        if elf.sections.len() == 0 {
+            println!("section headers not found");
+        } else {
+            for p in &elf.segments {
+                println!("{p}");
+            }
         }
 
     }
