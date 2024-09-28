@@ -14,7 +14,7 @@ const ELF_MAGIC: u32 = 0x464c457f;
 #[derive(Debug, Default)]
 pub struct Elf {
     pub header: Ehdr,
-    pub sections: Vec<Shdr>,
+    pub sections: Vec<Section>,
     pub segments: Vec<Phdr>,
 }
 
@@ -33,16 +33,19 @@ impl Elf {
             /* parse section headers */
             let mut shdrp = data.offset(elf.header.e_shoff as isize) as *const Shdr;
             for _ in 0..elf.header.e_shnum as usize{
-                elf.sections.push(ptr::read(shdrp as *const _));
+                elf.sections.push(Section::from_shdr_ptr(shdrp));
                 shdrp = shdrp.add(1);
             }
 
             /* parse program headers */
+            /*
             let mut phdrp = data.offset(elf.header.e_phoff as isize) as *const Phdr;
             for _ in 0..elf.header.e_phnum as usize{
                 elf.segments.push(ptr::read(phdrp as *const _));
                 phdrp = phdrp.add(1);
             }
+            */
+            
         }
 
         Ok(elf)
@@ -165,7 +168,7 @@ pub struct Phdr {
     p_offset: usize,
     p_vaddr: usize,
     p_paddr: usize,
-    p_filesz: usize,
+    ip_filesz: usize,
     p_memsz: usize,
     p_align: usize,
 }
@@ -176,6 +179,7 @@ impl fmt::Display for Phdr {
     }
 }
 
+#[derive(Debug)]
 pub struct Section {
     name: String,
     typ: u32,
@@ -187,6 +191,31 @@ pub struct Section {
     info: u32,
     addralign: usize,
     entsize: usize,
+}
+
+impl fmt::Display for Section {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#x?}", self)
+    }
+}
+
+impl Section {
+    fn from_shdr_ptr(shdrp: *const Shdr) -> Section {
+        unsafe {
+            Section {
+                name: String::new(),
+                typ: (*shdrp).sh_type,
+                flags: (*shdrp).sh_flags,
+                addr: (*shdrp).sh_addr,
+                offset: (*shdrp).sh_offset,
+                size: (*shdrp).sh_size,
+                link: (*shdrp).sh_link,
+                info: (*shdrp).sh_info,
+                addralign: (*shdrp).sh_addralign,
+                entsize: (*shdrp).sh_entsize,
+            }
+        }
+    }
 }
 
 fn is_ptr_to_elf(p: *const usize) -> bool {

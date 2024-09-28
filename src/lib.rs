@@ -20,8 +20,7 @@ mod tests {
         let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
         let elf = elf::Elf::open(path).expect("test failed");
 
-        println!("{}", elf.header);
-        for p in &elf.segments {
+        for p in &elf.sections {
             println!("{p}");
         }
 
