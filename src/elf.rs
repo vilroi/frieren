@@ -7,13 +7,13 @@ const EI_NIDENT: usize = 16;
 const ELF_MAGIC: u32 = 0x464c457f;
 
 pub struct ElfPtr {
-    pub header: *const ElfHeader,
+    pub header: *const Ehdr,
 }
 
 
 #[derive(Debug)]
 #[repr(C)]
-pub struct ElfHeader {
+pub struct Ehdr {
     e_ident: [u8; EI_NIDENT],
     e_type: u16,
     e_machine: u16,
@@ -30,7 +30,7 @@ pub struct ElfHeader {
     e_shstrndx: u16,
 }
 
-impl fmt::Display for ElfHeader {
+impl fmt::Display for Ehdr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:#x?}", self)
     }
@@ -47,7 +47,7 @@ impl ElfPtr {
             return Err("Pointer does not point to an elf file")
         }
 
-        elf.header = p as *const ElfHeader;
+        elf.header = p as *const Ehdr;
 
         Ok(elf)
     }
