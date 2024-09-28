@@ -15,7 +15,7 @@ const ELF_MAGIC: u32 = 0x464c457f;
 pub struct Elf {
     pub header: Ehdr,
     pub sections: Vec<Section>,
-    pub segments: Vec<Phdr>,
+    pub segments: Vec<Segment>,
 }
 
 impl Elf {
@@ -38,13 +38,11 @@ impl Elf {
             }
 
             /* parse program headers */
-            /*
             let mut phdrp = data.offset(elf.header.e_phoff as isize) as *const Phdr;
             for _ in 0..elf.header.e_phnum as usize{
-                elf.segments.push(ptr::read(phdrp as *const _));
+                elf.segments.push(Segment::from_phdr_ptr(phdrp));
                 phdrp = phdrp.add(1);
             }
-            */
             
         }
 
@@ -168,12 +166,49 @@ pub struct Phdr {
     p_offset: usize,
     p_vaddr: usize,
     p_paddr: usize,
-    ip_filesz: usize,
+    p_filesz: usize,
     p_memsz: usize,
     p_align: usize,
 }
 
 impl fmt::Display for Phdr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#x?}", self)
+    }
+}
+
+#[derive(Debug)]
+pub struct Segment {
+    name: String,
+    typ: u32,
+    flags: u32,
+    offset: usize,
+    vaddr: usize,
+    paddr: usize,
+    filesz: usize,
+    memsz: usize,
+    align: usize,
+}
+
+impl Segment {
+    fn from_phdr_ptr(p: *const Phdr) -> Self {
+        unsafe {
+            Segment {
+                name: String::new(),
+                typ: (*p).p_type,
+                flags: (*p).p_flags,
+                offset: (*p).p_offset,
+                vaddr: (*p).p_vaddr,
+                paddr: (*p).p_paddr,
+                filesz: (*p).p_filesz,
+                memsz: (*p).p_memsz,
+                align: (*p).p_align,
+            }
+        }
+    }
+}
+
+impl fmt::Display for Segment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:#x?}", self)
     }
@@ -200,19 +235,19 @@ impl fmt::Display for Section {
 }
 
 impl Section {
-    fn from_shdr_ptr(shdrp: *const Shdr) -> Section {
+    fn from_shdr_ptr(p: *const Shdr) -> Section {
         unsafe {
             Section {
                 name: String::new(),
-                typ: (*shdrp).sh_type,
-                flags: (*shdrp).sh_flags,
-                addr: (*shdrp).sh_addr,
-                offset: (*shdrp).sh_offset,
-                size: (*shdrp).sh_size,
-                link: (*shdrp).sh_link,
-                info: (*shdrp).sh_info,
-                addralign: (*shdrp).sh_addralign,
-                entsize: (*shdrp).sh_entsize,
+                typ: (*p).sh_type,
+                flags: (*p).sh_flags,
+                addr: (*p).sh_addr,
+                offset: (*p).sh_offset,
+                size: (*p).sh_size,
+                link: (*p).sh_link,
+                info: (*p).sh_info,
+                addralign: (*p).sh_addralign,
+                entsize: (*p).sh_entsize,
             }
         }
     }
