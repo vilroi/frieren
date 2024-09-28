@@ -66,7 +66,8 @@ impl Elf {
         Ok(elf)
     }
 
-    pub fn get_section_by_type(&self, typ: u32) -> impl Iterator<Item = &Section> {
+    pub fn get_section_by_type(&self, typ: SectionType) -> impl Iterator<Item = &Section> {
+        let typ = typ as u32;
         let vec: Vec<&Section> = self.sections.iter()
             .filter(|&s| s.typ == typ)
             .collect();

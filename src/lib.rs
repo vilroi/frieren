@@ -10,6 +10,8 @@ mod section;
 mod segment;
 mod symbols;
 
+use crate::section::*;
+
 const PAGE_SIZE: usize = 0x1000;
 
 #[cfg(test)]
@@ -25,15 +27,17 @@ mod tests {
         //let path = "/home/vilr0i/Projects/programming/frieren/test.bin.bad";
         let elf = elf::Elf::open(path).expect("test failed");
 
-        let symtabs = elf.get_section_by_type(3);
+        let symtabs = elf.get_section_by_type(SectionType::Strtab);
         for s in symtabs {
             println!("{s}");
         }
 
-        let relocs = elf.get_section_by_type(4);
+        /*
+        let relocs = elf.get_section_by_type(SectionType::Rela);
         for r in relocs {
             println!("{r}");
         }
+        */
     }
 }
 
