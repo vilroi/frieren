@@ -21,8 +21,8 @@ mod tests {
         let elf = elf::Elf::open(path).expect("test failed");
 
         println!("{}", elf.header);
-        for s in &elf.sections {
-            println!("{s}");
+        for p in &elf.segments {
+            println!("{p}");
         }
 
     }

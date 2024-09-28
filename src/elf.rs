@@ -40,8 +40,8 @@ impl Elf {
             /* parse program headers */
             let mut phdrp = data.offset(elf.header.e_phoff as isize) as *const Phdr;
             for _ in 0..elf.header.e_phnum as usize{
-                elf.sections.push(ptr::read(shdrp as *const _));
-                shdrp = shdrp.add(1);
+                elf.segments.push(ptr::read(phdrp as *const _));
+                phdrp = phdrp.add(1);
             }
         }
 
@@ -152,6 +152,25 @@ pub struct Shdr {
 }
 
 impl fmt::Display for Shdr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#x?}", self)
+    }
+}
+
+#[derive(Debug, Default)]
+#[repr(C)]
+pub struct Phdr {
+    p_type: u32,
+    p_flags: u32,
+    p_offset: usize,
+    p_vaddr: usize,
+    p_paddr: usize,
+    p_filesz: usize,
+    p_memsz: usize,
+    p_align: usize,
+}
+
+impl fmt::Display for Phdr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:#x?}", self)
     }
