@@ -4,12 +4,12 @@ use std::{
     time,
 };
 
-mod elf;
-mod header;
-mod section;
-mod segment;
-mod symbols;
-mod utils;
+pub mod elf;
+pub mod header;
+pub mod section;
+pub mod segment;
+pub mod symbols;
+pub mod utils;
 
 
 #[cfg(test)]
