@@ -56,11 +56,13 @@ mod tests {
         let elf = elf::Elf::open(path)
             .expect("failed to open {path}");
 
-        for s in &elf.symbols {
+        let mut count = 0;
+        for s in elf.iter_symbols() {
             println!("name: {}, value: {:#x}", s.name, s.value);
+            count += 1;
         }
 
-        assert!(elf.symbols.len() == 822);
+        assert!(count == 822);
     }
 }
 

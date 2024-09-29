@@ -18,11 +18,11 @@ const ELF_MAGIC: u32 = 0x464c457f;
 #[derive(Debug, Default)]
 pub struct Elf {
     data: Vec<u8>,
-    pub header: Ehdr,
-    pub sections: Vec<Section>,
+    header: Ehdr,
+    sections: Vec<Section>,
     //section_map: HashMap<String, &'a Section>,
-    pub segments: Vec<Segment>,
-    pub symbols: Vec<Symbol>,
+    segments: Vec<Segment>,
+    symbols: Vec<Symbol>,
 }
 
 impl Elf {
@@ -138,6 +138,18 @@ impl Elf {
             .collect();
 
         vec.into_iter()
+    }
+
+    pub fn iter_sections(&self) -> impl Iterator<Item = &Section> {
+        self.sections.iter()
+    }
+
+    pub fn iter_segments(&self) -> impl Iterator<Item = &Segment> {
+        self.segments.iter()
+    }
+
+    pub fn iter_symbols(&self) -> impl Iterator<Item = &Symbol> {
+        self.symbols.iter()
     }
 
     // TODO: does this always return a valid pointer?

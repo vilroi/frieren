@@ -65,6 +65,7 @@ enum ElfType {
     CORE,
 }
 
+/*
 pub struct ElfHeader {
     class: Class,
     endianess: Endianess,
@@ -72,6 +73,7 @@ pub struct ElfHeader {
     os_abi: OsAbi,
     elf_type: ElfType,
 }
+*/
 
 impl fmt::Display for Ehdr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
