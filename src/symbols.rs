@@ -2,7 +2,7 @@ use std::fmt;
 
 #[derive(Debug, Default)]
 #[repr(C)]
-pub struct Sym {
+pub struct ElfSym {
     pub st_name: u32,
     pub st_info: u8,
     pub st_other: u8,
@@ -11,12 +11,13 @@ pub struct Sym {
     pub st_size: usize,
 }
 
-impl fmt::Display for Sym {
+impl fmt::Display for ElfSym {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:#x?}", self)
     }
 }
 
+#[derive(Debug)]
 pub struct Symbol {
     pub name: String,
     pub name_offset: u32,
@@ -28,7 +29,7 @@ pub struct Symbol {
 }
 
 impl Symbol {
-    pub fn from_sym_ptr(p: *const Sym) -> Self {
+    pub fn from_elfsym_ptr(p: *const ElfSym) -> Self {
         unsafe {
             Symbol {
                 name: String::new(),
@@ -40,6 +41,12 @@ impl Symbol {
                 size: (*p).st_size,
             }
         }
+    }
+}
+
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#x?}", self)
     }
 }
 

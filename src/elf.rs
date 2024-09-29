@@ -2,6 +2,8 @@ use std::{
     ptr,
     io::Result,
     io::*,
+    mem,
+    //collections::HashMap,
 };
 
 use crate::header::*;
@@ -18,7 +20,9 @@ pub struct Elf {
     data: Vec<u8>,
     pub header: Ehdr,
     pub sections: Vec<Section>,
+    //section_map: HashMap<String, &'a Section>,
     pub segments: Vec<Segment>,
+    pub symbols: Vec<Symbol>,
 }
 
 impl Elf {
@@ -44,6 +48,7 @@ impl Elf {
             }
 
             elf.parse_sections()?;
+            elf.parse_symtab()?;
         }
 
         Ok(elf)
@@ -75,16 +80,55 @@ impl Elf {
                 shdrp = shdrp.add(1);
             }
 
+            /* Parse the section header string table, obtaining the names of sections. 
+             * In the process, build the look up table to search Sections by name */
             let shstrtab = &self.sections[self.header.e_shstrndx as usize];
             let strp = data.offset(shstrtab.offset as isize);
 
             for s in &mut self.sections {
                 let namep = strp.offset(s.name_offset as isize);
                 s.name = c_str_to_string(namep)?;
+
+                //self.section_map.insert(s.name.clone(), s);
             }
         }
 
         Ok(())
+    }
+
+    fn parse_symtab(&mut self) -> Result<()> {
+        unsafe {
+            let data = self.get_raw_ptr();
+            let symtab_section = self.get_section_by_name(".symtab")
+                .ok_or(Error::other("failed to locate symtab"))?;
+
+            let strtab_section = self.get_section_by_name(".strtab")
+                .ok_or(Error::other("failed to locate strtab"))?;
+
+            let mut symtab = data.offset(symtab_section.offset as isize) as *const ElfSym;
+            let nsymbols = symtab_section.size / mem::size_of::<ElfSym>();
+            
+            let strtab = data.offset(strtab_section.offset as isize) as *const u8;
+
+            for i in 0..nsymbols {
+                self.symbols.push(Symbol::from_elfsym_ptr(symtab));
+
+                let namep = strtab.offset((*symtab).st_name as isize);
+                self.symbols[i].name = c_str_to_string(namep)?;
+                symtab = symtab.add(1);
+            }
+
+            Ok(())
+        }
+    }
+
+    pub fn get_section_by_name(&self, name: &str) -> Option<&Section> {
+        for s in &self.sections {
+            if s.name == *name {
+                return Some(s);
+            }
+        }
+        None
     }
 
     pub fn get_section_by_type(&self, typ: SectionType) -> impl Iterator<Item = &Section> {

@@ -19,6 +19,7 @@ const PAGE_SIZE: usize = 0x1000;
 mod tests {
     use super::*;
 
+    /*
     #[test]
     fn test_elf() {
         let loadaddr = get_loadaddr();
@@ -33,17 +34,33 @@ mod tests {
         for s in symtabs {
             println!("{s}");
         }
-        */
     }
 
     #[test]
     fn test_sections() {
         let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
         let elf = elf::Elf::open(path).expect("test failed");
-
-        for s in elf.sections {
-            println!("{s}");
+        
+        let section = String::from(".go");
+        match elf.get_section_by_name(&section) {
+            Some(s) => println!("{s}"),
+            None => println!("{section} does not exist"),
         }
+    }
+        */
+    */
+
+    #[test]
+    fn test_symbols() {
+        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let elf = elf::Elf::open(path)
+            .expect("failed to open {path}");
+
+        for s in &elf.symbols {
+            println!("name: {}, value: {:#x}", s.name, s.value);
+        }
+
+        assert!(elf.symbols.len() == 822);
     }
 }
 
