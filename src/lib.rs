@@ -11,9 +11,6 @@ mod segment;
 mod symbols;
 mod utils;
 
-use crate::section::*;
-
-const PAGE_SIZE: usize = 0x1000;
 
 #[cfg(test)]
 mod tests {
@@ -50,7 +47,7 @@ mod tests {
         */
     */
 
-    #[test]
+    //#[test]
     fn test_symbols() {
         let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
         let elf = elf::Elf::open(path)
@@ -64,8 +61,25 @@ mod tests {
 
         assert!(count == 822);
     }
+
+    #[test]
+    fn test_get_symbols() {
+        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let elf = elf::Elf::open(path)
+            .expect("failed to open {path}");
+
+        let mut count = 0;
+        for sym in elf.get_symbols_by_type(SymbolType::Function) {
+            println!("func: {}", sym.name);
+            count += 1;
+        }
+
+        println!("count = {count}");
+        assert!(count == 620);
+    }
 }
 
+/*
 #[inline(always)]
 fn get_ip() -> usize {
     let ip: usize;
@@ -93,3 +107,4 @@ fn sleep(secs: u64) {
     let dur = time::Duration::from_secs(secs);
     thread::sleep(dur);
 }
+*/

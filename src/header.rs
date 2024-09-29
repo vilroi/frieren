@@ -52,7 +52,7 @@ enum OsAbi {
     TRU64,
     MODESTO,
     OPENBSD,
-    ARM_AEABI = 64,
+    ARMAEABI = 64,
     ARM = 87,
     STANDALONE = 255
 }

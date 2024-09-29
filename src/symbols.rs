@@ -1,5 +1,20 @@
 use std::fmt;
 
+pub enum SymbolType {
+    NoType = 0,
+    Object,
+    Function,
+    SEction,
+    File,
+    Common,
+    Tls,
+    Num,
+    GnuIfunc = 10,
+    HiOs = 12,
+    LoProc,
+    HiProc,
+}
+
 #[derive(Debug, Default)]
 #[repr(C)]
 pub struct ElfSym {
@@ -41,6 +56,11 @@ impl Symbol {
                 size: (*p).st_size,
             }
         }
+    }
+
+    pub fn within_range(&self, val: usize) -> bool {
+        let end = self.value + self.size;
+        val >= self.value && val < end
     }
 }
 

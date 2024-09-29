@@ -140,6 +140,15 @@ impl Elf {
         vec.into_iter()
     }
 
+    pub fn get_symbols_by_type(&self, typ: SymbolType) -> impl Iterator<Item = &Symbol> {
+        let typ = typ as u8;
+        let vec: Vec<&Symbol> = self.iter_symbols()
+            .filter(|&s| (s.info & 0xf) == typ)      // TODO: relace this with macro
+            .collect();
+
+        vec.into_iter()
+    }
+
     pub fn iter_sections(&self) -> impl Iterator<Item = &Section> {
         self.sections.iter()
     }
