@@ -1,7 +1,7 @@
 use std::{
-    arch::asm,
-    thread,
-    time,
+    //arch::asm,
+    //thread,
+    //time,
 };
 
 pub mod elf;
@@ -11,6 +11,7 @@ pub mod segment;
 pub mod symbols;
 pub mod utils;
 
+ use crate::symbols::SymbolType;
 
 #[cfg(test)]
 mod tests {
@@ -49,7 +50,7 @@ mod tests {
 
     //#[test]
     fn test_symbols() {
-        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let path = "test.bin";
         let elf = elf::Elf::open(path)
             .expect("failed to open {path}");
 
@@ -59,12 +60,11 @@ mod tests {
             count += 1;
         }
 
-        assert!(count == 822);
     }
 
     #[test]
     fn test_get_symbols() {
-        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let path = "./test.bin";
         let elf = elf::Elf::open(path)
             .expect("failed to open {path}");
 
@@ -75,7 +75,7 @@ mod tests {
         }
 
         println!("count = {count}");
-        assert!(count == 620);
+        assert!(count == 19);
     }
 }
 

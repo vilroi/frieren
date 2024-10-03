@@ -32,7 +32,9 @@ impl Elf {
         let data = elf.get_raw_ptr();
 
         if !is_ptr_to_elf(data as *const u32) {
-            return Err(Error::other("'{}' not a valid elf file"));
+            return Err(Error::other(
+                    format!("'{}' not a valid elf file", path))
+                );
         }
 
         unsafe {
@@ -111,7 +113,7 @@ impl Elf {
             let strtab = data.offset(strtab_section.offset as isize) as *const u8;
 
             for i in 0..nsymbols {
-                self.symbols.push(Symbol::from_elfsym_ptr(symtab));
+                self.symbols.push(Symbol::from_elfsym_ptr(symtab)?);
 
                 let namep = strtab.offset((*symtab).st_name as isize);
                 self.symbols[i].name = c_str_to_string(namep)?;
@@ -141,9 +143,8 @@ impl Elf {
     }
 
     pub fn get_symbols_by_type(&self, typ: SymbolType) -> impl Iterator<Item = &Symbol> {
-        let typ = typ as u8;
         let vec: Vec<&Symbol> = self.iter_symbols()
-            .filter(|&s| (s.info & 0xf) == typ)      // TODO: relace this with macro
+            .filter(|&s| s.symbol_type == typ)
             .collect();
 
         vec.into_iter()
