@@ -3,7 +3,7 @@ use std::{
     io::Result,
     io::*,
     mem,
-    //collections::HashMap,
+    collections::HashMap,
 };
 
 use crate::header::*;
@@ -22,7 +22,7 @@ pub struct Elf {
     sections: Vec<Section>,
     //section_map: HashMap<String, &'a Section>,
     segments: Vec<Segment>,
-    symbols: Vec<Symbol>,
+    symbols: HashMap<String, Symbol>,
 }
 
 impl Elf {
@@ -37,21 +37,18 @@ impl Elf {
                 );
         }
 
-        unsafe {
-            elf.header = ptr::read(data as *const _);
-            elf.parse_segments();
-            /* 
-             * If the section headers have been stripped, there is no point in continuing.
-             * Return early.
-             * TODO: Take into consideration tampered headers
-             */
-            if elf.header.e_shoff == 0 || elf.header.e_shoff > elf.data.len() {
-                return Ok(elf)
-            }
+        elf.header = unsafe { ptr::read(data as *const _) };
+        elf.parse_segments();
 
-            elf.parse_sections()?;
-            elf.parse_symtab()?;
+        // If the section headers have been stripped, there is no point in continuing.
+        // Return early.
+        // TODO: Take into consideration tampered headers
+        if elf.header.e_shoff == 0 || elf.header.e_shoff > elf.data.len() {
+            return Ok(elf)
         }
+
+        elf.parse_sections()?;
+        elf.parse_symtab()?;
 
         Ok(elf)
     }
@@ -82,8 +79,8 @@ impl Elf {
                 shdrp = shdrp.add(1);
             }
 
-            /* Parse the section header string table, obtaining the names of sections. 
-             * In the process, build the look up table to search Sections by name */
+            // Parse the section header string table, obtaining the names of sections. 
+            // In the process, build the look up table to search Sections by name 
             let shstrtab = &self.sections[self.header.e_shstrndx as usize];
             let strp = data.offset(shstrtab.offset as isize);
 
@@ -108,15 +105,21 @@ impl Elf {
                 .ok_or(Error::other("failed to locate strtab"))?;
 
             let mut symtab = data.offset(symtab_section.offset as isize) as *const ElfSym;
+
             let nsymbols = symtab_section.size / mem::size_of::<ElfSym>();
             
             let strtab = data.offset(strtab_section.offset as isize) as *const u8;
 
-            for i in 0..nsymbols {
-                self.symbols.push(Symbol::from_elfsym_ptr(symtab)?);
-
+            for _ in 0..nsymbols {
+                let mut symbol = Symbol::from_elfsym_ptr(symtab)?;
                 let namep = strtab.offset((*symtab).st_name as isize);
-                self.symbols[i].name = c_str_to_string(namep)?;
+
+                symbol.name = c_str_to_string(namep)?;
+                self.symbols.insert(
+                    symbol.name.clone(), 
+                    symbol
+                );
+
                 symtab = symtab.add(1);
             }
 
@@ -150,6 +153,10 @@ impl Elf {
         vec.into_iter()
     }
 
+    pub fn get_symbol(&self, name: &str) -> Option<&Symbol> {
+        self.symbols.get(name)
+    }
+
     pub fn iter_sections(&self) -> impl Iterator<Item = &Section> {
         self.sections.iter()
     }
@@ -159,7 +166,7 @@ impl Elf {
     }
 
     pub fn iter_symbols(&self) -> impl Iterator<Item = &Symbol> {
-        self.symbols.iter()
+        self.symbols.values()
     }
 
     // TODO: does this always return a valid pointer?

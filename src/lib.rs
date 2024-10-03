@@ -1,7 +1,7 @@
 use std::{
-    //arch::asm,
-    //thread,
-    //time,
+    arch::asm,
+    thread,
+    time,
 };
 
 pub mod elf;
@@ -12,31 +12,32 @@ pub mod symbols;
 pub mod utils;
 
  use crate::symbols::SymbolType;
+ use crate::section::SectionType;
+
+ const PAGE_SIZE: usize = 0x1000;
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    /*
-    #[test]
+    //#[test]
     fn test_elf() {
         let loadaddr = get_loadaddr();
         println!("load address: {:#x}", loadaddr as usize);
         
-        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let path = "test.bin";
         //let path = "/home/vilr0i/Projects/programming/frieren/test.bin.bad";
         let elf = elf::Elf::open(path).expect("test failed");
 
-        /*
         let symtabs = elf.get_section_by_type(SectionType::Strtab);
         for s in symtabs {
             println!("{s}");
         }
     }
 
-    #[test]
+    //#[test]
     fn test_sections() {
-        let path = "/home/vilr0i/Projects/programming/frieren/test.bin";
+        let path = "test.bin";
         let elf = elf::Elf::open(path).expect("test failed");
         
         let section = String::from(".go");
@@ -45,8 +46,6 @@ mod tests {
             None => println!("{section} does not exist"),
         }
     }
-        */
-    */
 
     //#[test]
     fn test_symbols() {
@@ -76,10 +75,12 @@ mod tests {
 
         println!("count = {count}");
         assert!(count == 19);
+
+        let sym = elf.get_symbol("_start").expect("Failed to find symbol");
+        println!("{}", sym);
     }
 }
 
-/*
 #[inline(always)]
 fn get_ip() -> usize {
     let ip: usize;
@@ -107,4 +108,3 @@ fn sleep(secs: u64) {
     let dur = time::Duration::from_secs(secs);
     thread::sleep(dur);
 }
-*/
