@@ -25,7 +25,7 @@ pub struct Elf {
     //section_map: HashMap<String, &'a Section>,
     segments: Vec<Segment>,
     symbols: HashMap<String, Symbol>,
-    dynamic: Vec<Dynamic>,
+    pub dynamic: Vec<Dynamic>,
 }
 
 impl Elf {
@@ -102,35 +102,23 @@ impl Elf {
     }
 
     fn parse_symtab(&mut self) -> Result<()> {
-        unsafe {
-            let data = self.get_raw_ptr();
-            let symtab_section = self.get_section_by_name(".symtab")
-                .ok_or(Error::other("failed to locate symtab"))?;
+        let mut symbols: HashMap<String, Symbol> = HashMap::new();
+        let symtab = self.get_section_data::<ElfSym>(".symtab")?;
+        let strtab = self.get_ptr_to_section(".strtab")?;
 
-            let strtab_section = self.get_section_by_name(".strtab")
-                .ok_or(Error::other("failed to locate strtab"))?;
+        for s in symtab {
+            let mut symbol = Symbol::from_elfsym(s)?;
+            let namep = unsafe { strtab.offset(s.st_name as isize) };
 
-            let mut symtab = data.offset(symtab_section.offset as isize) as *const ElfSym;
-
-            let nsymbols = symtab_section.size / mem::size_of::<ElfSym>();
-            
-            let strtab = data.offset(strtab_section.offset as isize) as *const u8;
-
-            for _ in 0..nsymbols {
-                let mut symbol = Symbol::from_elfsym_ptr(symtab)?;
-                let namep = strtab.offset((*symtab).st_name as isize);
-
-                symbol.name = c_str_to_string(namep)?;
-                self.symbols.insert(
-                    symbol.name.clone(), 
-                    symbol
-                );
-
-                symtab = symtab.add(1);
-            }
-
-            Ok(())
+            symbol.name = c_str_to_string(namep)?;
+            symbols.insert(
+                symbol.name.clone(), 
+                symbol
+            );
         }
+
+        self.symbols = symbols;
+        Ok(())
     }
 
     fn parse_dynamic_section(&mut self) -> Result<()> {
@@ -149,7 +137,21 @@ impl Elf {
         Ok(())
     }
 
-    fn get_section_data<T>(&mut self, section_name: &str) -> Result<&[T]> {
+    fn get_ptr_to_section(&self, section_name: &str) -> Result<*const u8> {
+        let mut ptr = self.get_raw_ptr();
+        let section = match self.get_section_by_name(section_name) {
+            Some(s) => s,
+            None => return Err(
+                Error::other(
+                    format!("Failed to locate section: {section_name}")
+                )),
+        };
+
+        ptr = unsafe { ptr.add(section.offset) };
+        Ok(ptr)
+    }
+
+    fn get_section_data<T>(&self, section_name: &str) -> Result<&[T]> {
         let mut data = self.get_raw_ptr();
         let section = match self.get_section_by_name(section_name) {
             Some(s) => s,

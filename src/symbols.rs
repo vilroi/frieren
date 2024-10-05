@@ -60,6 +60,20 @@ pub struct Symbol {
 }
 
 impl Symbol {
+    pub fn from_elfsym(sym: &ElfSym) -> Result<Self> {
+        unsafe {
+            Ok(Symbol {
+                name: String::new(),
+                binding: info_to_binding(sym.st_info)?,
+                symbol_type: info_to_type(sym.st_info)?,
+                other: sym.st_other,
+                shndx: sym.st_shndx,
+                value: sym.st_value,
+                size: sym.st_size,
+            })
+        }
+    }
+
     pub fn from_elfsym_ptr(p: *const ElfSym) -> Result<Self> {
         unsafe {
             Ok(Symbol {

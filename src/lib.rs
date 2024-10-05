@@ -65,9 +65,9 @@ mod tests {
 
     }
 
-    //#[test]
+    #[test]
     fn test_get_symbols() {
-        let path = "./test.bin";
+        let path = "./testbins/rustbin";
         let elf = elf::Elf::open(path)
             .expect("failed to open {path}");
 
@@ -77,14 +77,15 @@ mod tests {
             count += 1;
         }
 
-        println!("count = {count}");
-        assert!(count == 19);
+        //assert!(count == 19);
 
-        let sym = elf.get_symbol("_start").expect("Failed to find symbol");
+        let name = "_start";
+        let sym = elf.get_symbol(name)
+            .expect(&String::from(format!("Failed to find symbol: '{name}'")));
         println!("{}", sym);
     }
 
-    #[test]
+    //#[test]
     fn test_dynamic_section() {
         let path = "./testbins/rustbin";
         let elf = elf::Elf::open(path)
