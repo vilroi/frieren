@@ -139,6 +139,9 @@ impl Elf {
 
         for entry in data {
             dynamic.push(Dynamic::from_dyn(entry)?);
+            if entry.d_tag == EntryType::Null as usize {
+                break;
+            }
         }
 
         self.dynamic = dynamic;
@@ -150,9 +153,10 @@ impl Elf {
         let mut data = self.get_raw_ptr();
         let section = match self.get_section_by_name(section_name) {
             Some(s) => s,
-            None => return Err(Error::other(
+            None => return Err(
+                Error::other(
                     format!("Failed to locate section: {section_name}")
-                    )),
+                )),
         };
 
         data = unsafe { data.offset(section.offset as isize) };

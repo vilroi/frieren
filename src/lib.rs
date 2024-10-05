@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn test_dynamic_section() {
-        let path = "./testbins/gobinary";
+        let path = "./testbins/rustbin";
         let elf = elf::Elf::open(path)
             .expect("failed to open {path}");
 

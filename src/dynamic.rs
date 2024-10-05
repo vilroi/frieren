@@ -3,8 +3,8 @@ use std::io::*;
 #[derive(Debug, Default)]
 #[repr(C)]
 pub struct Dyn {
-    d_tag: usize,
-    d_val: usize,
+    pub d_tag: usize,
+    pub d_val: usize,
 }
 
 #[derive(Debug)]
