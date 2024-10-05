@@ -2,7 +2,7 @@ use std::{
     ptr,
     io::Result,
     io::*,
-    mem,
+    //mem,
     collections::HashMap,
     slice,
 };
@@ -14,7 +14,7 @@ use crate::symbols::*;
 use crate::dynamic::*;
 use crate::utils::*;
 
-const EI_NIDENT: usize = 16;
+//const EI_NIDENT: usize = 16;
 const ELF_MAGIC: u32 = 0x464c457f;
 
 #[derive(Debug, Default)]
@@ -148,6 +148,7 @@ impl Elf {
         };
 
         ptr = unsafe { ptr.add(section.offset) };
+
         Ok(ptr)
     }
 
