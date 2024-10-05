@@ -57,12 +57,12 @@ enum OsAbi {
     STANDALONE = 255
 }
 
-enum ElfType {
-    NONE,
-    REL,
-    EXEC,
-    DYN,
-    CORE,
+pub enum ElfType {
+    None_,
+    Reloc,
+    Exec,
+    Dynamic,
+    Core,
 }
 
 /*

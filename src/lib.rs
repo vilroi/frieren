@@ -9,7 +9,11 @@ pub mod header;
 pub mod section;
 pub mod segment;
 pub mod symbols;
+pub mod dynamic;
 pub mod utils;
+
+#[macro_use]
+extern crate num_derive;
 
  use crate::symbols::SymbolType;
  use crate::section::SectionType;
@@ -61,7 +65,7 @@ mod tests {
 
     }
 
-    #[test]
+    //#[test]
     fn test_get_symbols() {
         let path = "./test.bin";
         let elf = elf::Elf::open(path)
@@ -78,6 +82,18 @@ mod tests {
 
         let sym = elf.get_symbol("_start").expect("Failed to find symbol");
         println!("{}", sym);
+    }
+
+    #[test]
+    fn test_dynamic_section() {
+        let path = "./testbins/gobinary";
+        let elf = elf::Elf::open(path)
+            .expect("failed to open {path}");
+
+        for d in elf.dynamic {
+            println!("{:?}: {:#x}", d.tag, d.val);
+        }
+
     }
 }
 

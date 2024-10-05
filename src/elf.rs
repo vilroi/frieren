@@ -4,12 +4,14 @@ use std::{
     io::*,
     mem,
     collections::HashMap,
+    slice,
 };
 
 use crate::header::*;
 use crate::section::*;
 use crate::segment::*;
 use crate::symbols::*;
+use crate::dynamic::*;
 use crate::utils::*;
 
 const EI_NIDENT: usize = 16;
@@ -23,6 +25,7 @@ pub struct Elf {
     //section_map: HashMap<String, &'a Section>,
     segments: Vec<Segment>,
     symbols: HashMap<String, Symbol>,
+    dynamic: Vec<Dynamic>,
 }
 
 impl Elf {
@@ -49,6 +52,11 @@ impl Elf {
 
         elf.parse_sections()?;
         elf.parse_symtab()?;
+
+        // TODO: 
+        if elf.header.e_type == ElfType::Dynamic as u16 {
+            elf.parse_dynamic_section()?;
+        }
 
         Ok(elf)
     }
@@ -87,8 +95,6 @@ impl Elf {
             for s in &mut self.sections {
                 let namep = strp.offset(s.name_offset as isize);
                 s.name = c_str_to_string(namep)?;
-
-                //self.section_map.insert(s.name.clone(), s);
             }
         }
 
@@ -125,6 +131,39 @@ impl Elf {
 
             Ok(())
         }
+    }
+
+    fn parse_dynamic_section(&mut self) -> Result<()> {
+        let data = self.get_section_data::<Dyn>(".dynamic")?;
+        let mut dynamic: Vec<Dynamic> = Vec::new();
+
+        for entry in data {
+            dynamic.push(Dynamic::from_dyn(entry)?);
+        }
+
+        self.dynamic = dynamic;
+
+        Ok(())
+    }
+
+    fn get_section_data<T>(&mut self, section_name: &str) -> Result<&[T]> {
+        let mut data = self.get_raw_ptr();
+        let section = match self.get_section_by_name(section_name) {
+            Some(s) => s,
+            None => return Err(Error::other(
+                    format!("Failed to locate section: {section_name}")
+                    )),
+        };
+
+        data = unsafe { data.offset(section.offset as isize) };
+        let len = section.size / section.entsize;
+
+        let slice = unsafe { slice::from_raw_parts(
+            data as *const T,
+            len
+        )};
+
+        Ok(slice)
     }
 
     pub fn get_section_by_name(&self, name: &str) -> Option<&Section> {
