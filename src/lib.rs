@@ -30,7 +30,6 @@ mod tests {
         println!("load address: {:#x}", loadaddr as usize);
         
         let path = "test.bin";
-        //let path = "/home/vilr0i/Projects/programming/frieren/test.bin.bad";
         let elf = elf::Elf::open(path).expect("test failed");
 
         let symtabs = elf.get_section_by_type(SectionType::Strtab);
